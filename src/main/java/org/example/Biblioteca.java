@@ -5,6 +5,9 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Biblioteca extends JFrame {
 
@@ -18,12 +21,15 @@ public class Biblioteca extends JFrame {
 
     private JTextField campoNomeCategoria;
     private JTextField campoTituloLivro;
-    private JComboBox<String> comboCategoria;
+    private JComboBox<ComboItem> comboCategoria;
     private JComboBox<String> comboLivro;
     private JTextField campoDataEmprestimo;
     private JTextField campoDataDevolucao;
 
+    private GerenciaDados gerenciaDados;
+
     public Biblioteca() {
+        gerenciaDados = new GerenciaDados();
         setTitle("Biblioteca");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,17 +78,27 @@ public class Biblioteca extends JFrame {
 
         // Ação para Adicionar Categoria
         btnAdicionarCategoria.addActionListener(e -> {
-            // Lógica para adicionar categoria
+            try {
+                gerenciaDados.addCategoria(campoNomeCategoria.getText());
+                atualizarTabelaCategoria();
+                campoNomeCategoria.setText("");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         });
 
         // Ação para Editar Categoria
         btnEditarCategoria.addActionListener(e -> {
             int linhaSelecionada = tabelaCategoria.getSelectedRow();
             if (linhaSelecionada != -1) {
-                // Lógica para editar a categoria selecionada
-                String nome = campoNomeCategoria.getText();
-                modeloTabelaCategoria.setValueAt(nome, linhaSelecionada, 1);
-                campoNomeCategoria.setText("");
+                try {
+                    int id = (int) modeloTabelaCategoria.getValueAt(linhaSelecionada, 0);
+                    gerenciaDados.updateCategoria(id, campoNomeCategoria.getText());
+                    atualizarTabelaCategoria();
+                    campoNomeCategoria.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione uma categoria para editar.");
             }
@@ -92,9 +108,14 @@ public class Biblioteca extends JFrame {
         btnExcluirCategoria.addActionListener(e -> {
             int linhaSelecionada = tabelaCategoria.getSelectedRow();
             if (linhaSelecionada != -1) {
-                // Lógica para excluir a categoria selecionada
-                modeloTabelaCategoria.removeRow(linhaSelecionada);
-                campoNomeCategoria.setText("");
+                try {
+                    int id = (int) modeloTabelaCategoria.getValueAt(linhaSelecionada, 0);
+                    gerenciaDados.deleteCategoria(id);
+                    atualizarTabelaCategoria();
+                    campoNomeCategoria.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione uma categoria para excluir.");
             }
@@ -104,6 +125,7 @@ public class Biblioteca extends JFrame {
         formulario.add(btnEditarCategoria);
         formulario.add(btnExcluirCategoria);
         painel.add(formulario, BorderLayout.SOUTH);
+        atualizarTabelaCategoria();
         return painel;
     }
 
@@ -128,6 +150,7 @@ public class Biblioteca extends JFrame {
 
         formulario.add(new JLabel("Categoria:"));
         comboCategoria = new JComboBox<>(); // Preencher com categorias do banco
+        preencherComboCategorias();
         formulario.add(comboCategoria);
 
         JButton btnAdicionarLivro = new JButton("Adicionar");
@@ -136,17 +159,29 @@ public class Biblioteca extends JFrame {
 
         // Ação para Adicionar Livro
         btnAdicionarLivro.addActionListener(e -> {
-            // Lógica para adicionar livro
+            try {
+                int idCategoria = getSelectedCategoriaId();
+                gerenciaDados.addLivro(campoTituloLivro.getText(), idCategoria);
+                atualizarTabelaLivro();
+                campoTituloLivro.setText("");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         });
 
         // Ação para Editar Livro
         btnEditarLivro.addActionListener(e -> {
             int linhaSelecionada = tabelaLivro.getSelectedRow();
             if (linhaSelecionada != -1) {
-                // Lógica para editar o livro selecionado
-                String titulo = campoTituloLivro.getText();
-                modeloTabelaLivro.setValueAt(titulo, linhaSelecionada, 1);
-                campoTituloLivro.setText("");
+                try {
+                    int id = (int) modeloTabelaLivro.getValueAt(linhaSelecionada, 0);
+                    int idCategoria = getSelectedCategoriaId(); // Usa o método para obter o ID correto
+                    gerenciaDados.updateLivro(id, campoTituloLivro.getText(), idCategoria);
+                    atualizarTabelaLivro();
+                    campoTituloLivro.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um livro para editar.");
             }
@@ -156,9 +191,14 @@ public class Biblioteca extends JFrame {
         btnExcluirLivro.addActionListener(e -> {
             int linhaSelecionada = tabelaLivro.getSelectedRow();
             if (linhaSelecionada != -1) {
-                // Lógica para excluir o livro selecionado
-                modeloTabelaLivro.removeRow(linhaSelecionada);
-                campoTituloLivro.setText("");
+                try {
+                    int id = (int) modeloTabelaLivro.getValueAt(linhaSelecionada, 0);
+                    gerenciaDados.deleteLivro(id);
+                    atualizarTabelaLivro();
+                    campoTituloLivro.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um livro para excluir.");
             }
@@ -168,6 +208,7 @@ public class Biblioteca extends JFrame {
         formulario.add(btnEditarLivro);
         formulario.add(btnExcluirLivro);
         painel.add(formulario, BorderLayout.SOUTH);
+        atualizarTabelaLivro();
         return painel;
     }
 
@@ -189,6 +230,7 @@ public class Biblioteca extends JFrame {
         JPanel formulario = new JPanel(new GridLayout(0, 2));
         formulario.add(new JLabel("Livro:"));
         comboLivro = new JComboBox<>(); // Preencher com livros do banco
+        preencherComboLivros();
         formulario.add(comboLivro);
 
         formulario.add(new JLabel("Data de Empréstimo:"));
@@ -205,56 +247,141 @@ public class Biblioteca extends JFrame {
 
         // Ação para Adicionar Empréstimo
         btnAdicionarEmprestimo.addActionListener(e -> {
-            // Lógica para adicionar empréstimo
+            try {
+                int idLivro = comboLivro.getSelectedIndex() + 1; // Ajuste conforme a lógica do banco
+                Date dataEmprestimo = Date.valueOf(campoDataEmprestimo.getText());
+                Date dataDevolucao = Date.valueOf(campoDataDevolucao.getText());
+                gerenciaDados.addEmprestimo(idLivro, dataEmprestimo, dataDevolucao);
+                atualizarTabelaEmprestimo();
+                campoDataEmprestimo.setText("");
+                campoDataDevolucao.setText("");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         });
 
         // Ação para Editar Empréstimo
         btnEditarEmprestimo.addActionListener(e -> {
-            int linhaSelecionada = tabelaEmprestimo.getSelectedRow();
-            if (linhaSelecionada != -1) {
-                // Lógica para editar o empréstimo selecionado
-                String livro = (String) comboLivro.getSelectedItem();
-                modeloTabelaEmprestimo.setValueAt(livro, linhaSelecionada, 1);
-                modeloTabelaEmprestimo.setValueAt(campoDataEmprestimo.getText(), linhaSelecionada, 2);
-                modeloTabelaEmprestimo.setValueAt(campoDataDevolucao.getText(), linhaSelecionada, 3);
-                campoDataEmprestimo.setText("");
-                campoDataDevolucao.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this, "Selecione um empréstimo para editar.");
-            }
+            // Implementar lógica para editar empréstimo
         });
 
         // Ação para Excluir Empréstimo
         btnExcluirEmprestimo.addActionListener(e -> {
-            int linhaSelecionada = tabelaEmprestimo.getSelectedRow();
-            if (linhaSelecionada != -1) {
-                // Lógica para excluir o empréstimo selecionado
-                modeloTabelaEmprestimo.removeRow(linhaSelecionada);
-                campoDataEmprestimo.setText("");
-                campoDataDevolucao.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this, "Selecione um empréstimo para excluir.");
-            }
+            // Implementar lógica para excluir empréstimo
         });
 
         formulario.add(btnAdicionarEmprestimo);
         formulario.add(btnEditarEmprestimo);
         formulario.add(btnExcluirEmprestimo);
-
         painel.add(formulario, BorderLayout.SOUTH);
+        atualizarTabelaEmprestimo();
         return painel;
     }
 
-
-    public void atualizarTabelaCategoria(Object[][] dados, String[] colunas) {
-        modeloTabelaCategoria.setDataVector(dados, colunas);
+    // Método para preencher categorias no JComboBox
+    private void preencherComboCategorias() {
+        comboCategoria.removeAllItems();
+        try {
+            ResultSet rs = gerenciaDados.getCategorias();
+            while (rs.next()) {
+                int id = rs.getInt("id_categoria");
+                String nome = rs.getString("nome_categoria");
+                comboCategoria.addItem(new ComboItem(id, nome));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    public void atualizarTabelaLivro(Object[][] dados, String[] colunas) {
-        modeloTabelaLivro.setDataVector(dados, colunas);
+    // Método para preencher livros no JComboBox
+    private void preencherComboLivros() {
+        comboLivro.removeAllItems();
+        try {
+            ResultSet rs = gerenciaDados.getLivros();
+            while (rs.next()) {
+                int id = rs.getInt("id_livro");
+                String titulo = rs.getString("titulo_livro");
+                comboLivro.addItem(String.valueOf(new ComboItem(id, titulo)));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    public void atualizarTabelaEmprestimo(Object[][] dados, String[] colunas) {
-        modeloTabelaEmprestimo.setDataVector(dados, colunas);
+    // Método para obter o ID da categoria selecionada
+    private int getSelectedCategoriaId() {
+        return ((ComboItem) comboCategoria.getSelectedItem()).getId();
     }
+
+    // Atualiza a tabela de categorias
+    private void atualizarTabelaCategoria() {
+        modeloTabelaCategoria.setRowCount(0);
+        try {
+            ResultSet rs = gerenciaDados.getCategorias();
+            while (rs.next()) {
+                int id = rs.getInt("id_categoria");
+                String nome = rs.getString("nome_categoria");
+                modeloTabelaCategoria.addRow(new Object[]{id, nome});
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Atualiza a tabela de livros
+    private void atualizarTabelaLivro() {
+        modeloTabelaLivro.setRowCount(0);
+        try {
+            ResultSet rs = gerenciaDados.getLivros();
+            boolean temLivros = false;
+
+            while (rs.next()) {
+                int id = rs.getInt("id_livro");
+                String titulo = rs.getString("titulo_livro");
+                String categoria = rs.getString("nome_categoria");
+                modeloTabelaLivro.addRow(new Object[]{id, titulo, categoria});
+                temLivros = true;
+            }
+
+            if (!temLivros) {
+                modeloTabelaLivro.addRow(new Object[]{"", "Nenhum livro registrado", ""});
+            }
+
+        } catch (SQLException ex) {
+            // Exibe uma mensagem de erro para o usuário
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela de livros: " + ex.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace(); // Você pode manter isso para depuração
+        }
+    }
+
+    // Atualiza a tabela de empréstimos
+    private void atualizarTabelaEmprestimo() {
+        modeloTabelaEmprestimo.setRowCount(0);
+        try {
+            ResultSet rs = gerenciaDados.getEmprestimos();
+            boolean temEmprestimos = false;
+
+            while (rs.next()) {
+                int id = rs.getInt("id_emprestimo");
+                String livro = rs.getString("livro");
+                Date dataEmprestimo = rs.getDate("data_emprestimo");
+                Date dataDevolucao = rs.getDate("data_devolucao");
+                modeloTabelaEmprestimo.addRow(new Object[]{id, livro, dataEmprestimo, dataDevolucao});
+                temEmprestimos = true;
+            }
+
+
+            if (!temEmprestimos) {
+                modeloTabelaEmprestimo.addRow(new Object[]{"", "Nenhum empréstimo registrado", "", ""});
+            }
+
+        } catch (SQLException ex) {
+
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela de empréstimos: " + ex.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
 }

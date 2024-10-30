@@ -3,7 +3,7 @@ package org.example;
 import java.sql.*;
 
 public class GerenciaDados {
-    private final String URL = "jdbc:postgres://localhost:5433/biblioteca";
+    private final String URL = "jdbc:mysql://localhost:3306/biblioteca";
     private final String USER = "user";
     private final String SENHA = "password";
 
@@ -77,7 +77,7 @@ public class GerenciaDados {
 
     // Lista todos os livros
     public ResultSet getLivros() throws SQLException {
-        String sql = "SELECT l.id_livro, l.titulo_livro, c.nome_categoria FROM livro l JOIN categoria c ON l.id_categoria = c.id_categoria";
+        String sql = "SELECT l.id_livro, l.titulo_livro, c.nome_categoria FROM livro l JOIN categoria c ON l.id_categoria = c.nome_categoria";
         Connection conn = getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
         return stmt.executeQuery();

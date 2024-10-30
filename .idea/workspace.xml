@@ -4,16 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="894595f1-4ca9-4890-9394-e8aea9ca9e4a" name="Changes" comment="commit inicial">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/codigo.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Biblioteca.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/GerenciaDados.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="894595f1-4ca9-4890-9394-e8aea9ca9e4a" name="Changes" comment="add: projeto2">
+      <change afterPath="$PROJECT_DIR$/docs/preencher-tabelas.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/ComboItem.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Biblioteca.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Biblioteca.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/GerenciaDados.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/GerenciaDados.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +54,7 @@
     "project.structure.side.proportion": "0.0"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.Main">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.Main" />
       <module name="projeto-biblioteca-jdbc" />
@@ -115,6 +113,52 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml: Compose Deployment (1)" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.database: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="database" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.pgadmin: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="pgadmin" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <module name="projeto-biblioteca-jbdc" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -136,6 +180,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.Main" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment (1)" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.database: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml.pgadmin: Compose Deployment" />
       </list>
     </recent_temporary>
   </component>
@@ -155,11 +203,27 @@
       <option name="project" value="LOCAL" />
       <updated>1730259349825</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="add: projeto">
+      <created>1730271380641</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1730271380641</updated>
+    </task>
+    <task id="LOCAL-00003" summary="add: projeto2">
+      <created>1730271404033</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1730271404033</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="commit inicial" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit inicial" />
+    <MESSAGE value="add: projeto" />
+    <MESSAGE value="add: projeto2" />
+    <option name="LAST_COMMIT_MESSAGE" value="add: projeto2" />
   </component>
 </project>
