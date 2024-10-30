@@ -14,17 +14,24 @@ public class Biblioteca extends JFrame {
     private JTabbedPane abas;
     private JTable tabelaCategoria;
     private JTable tabelaLivro;
+    private JTable tabelaUsuario;
     private JTable tabelaEmprestimo;
     private DefaultTableModel modeloTabelaCategoria;
     private DefaultTableModel modeloTabelaLivro;
+
+    private DefaultTableModel modeloTabelaUsuario;
     private DefaultTableModel modeloTabelaEmprestimo;
 
     private JTextField campoNomeCategoria;
     private JTextField campoTituloLivro;
     private JComboBox<ComboItem> comboCategoria;
     private JComboBox<ComboItem> comboLivro;
+    private JComboBox<ComboItem> comboUsuario;
     private JTextField campoDataEmprestimo;
     private JTextField campoDataDevolucao;
+
+    private JTextField campoNomeUsuario;
+    private JTextField campoEmailUsuario;
 
     private GerenciaDados gerenciaDados;
 
@@ -44,7 +51,10 @@ public class Biblioteca extends JFrame {
 
         // Aba de Livros
         JPanel painelLivro = criarPainelLivro();
-        abas.addTab("Livros", painelLivro);
+        abas.addTab("Acervo", painelLivro);
+
+        JPanel painelUsuario = criarPainelUsuario();
+        abas.addTab("Usuário", painelUsuario);
 
         // Aba de Empréstimos
         JPanel painelEmprestimo = criarPainelEmprestimo();
@@ -213,6 +223,89 @@ public class Biblioteca extends JFrame {
         return painel;
     }
 
+    private JPanel criarPainelUsuario() {
+        JPanel painel = new JPanel(new BorderLayout());
+
+        // Modelo e Tabela
+        modeloTabelaUsuario = new DefaultTableModel();
+        tabelaUsuario = new JTable(modeloTabelaUsuario);
+        modeloTabelaUsuario.addColumn("ID");
+        modeloTabelaUsuario.addColumn("Nome");
+        modeloTabelaUsuario.addColumn("Email");
+
+        painel.add(new JScrollPane(tabelaUsuario), BorderLayout.CENTER);
+
+        // Formulário para adicionar usuários
+        JPanel formulario = new JPanel(new GridLayout(0, 2));
+        formulario.add(new JLabel("Nome do Usuário:"));
+        campoNomeUsuario = new JTextField();
+        formulario.add(campoNomeUsuario);
+
+        formulario.add(new JLabel("Email:"));
+        campoEmailUsuario = new JTextField();
+        formulario.add(campoEmailUsuario);
+
+        JButton btnAdicionarUsuario = new JButton("Adicionar");
+        JButton btnEditarUsuario = new JButton("Editar");
+        JButton btnExcluirUsuario = new JButton("Excluir");
+
+        // Ação para Adicionar Usuário
+        btnAdicionarUsuario.addActionListener(e -> {
+            try {
+                gerenciaDados.addUsuario(campoNomeUsuario.getText(), campoEmailUsuario.getText());
+                atualizarTabelaUsuario();
+                campoNomeUsuario.setText("");
+                campoEmailUsuario.setText("");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        // Ação para Editar Usuário
+        btnEditarUsuario.addActionListener(e -> {
+            int linhaSelecionada = tabelaUsuario.getSelectedRow();
+            if (linhaSelecionada != -1) {
+                try {
+                    int id = (int) modeloTabelaUsuario.getValueAt(linhaSelecionada, 0);
+                    gerenciaDados.updateUsuario(id, campoNomeUsuario.getText(), campoEmailUsuario.getText());
+                    atualizarTabelaUsuario();
+                    campoNomeUsuario.setText("");
+                    campoEmailUsuario.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um usuário para editar.");
+            }
+        });
+
+        // Ação para Excluir Usuário
+        btnExcluirUsuario.addActionListener(e -> {
+            int linhaSelecionada = tabelaUsuario.getSelectedRow();
+            if (linhaSelecionada != -1) {
+                try {
+                    int id = (int) modeloTabelaUsuario.getValueAt(linhaSelecionada, 0);
+                    gerenciaDados.deleteUsuario(id);
+                    atualizarTabelaUsuario();
+                    campoNomeUsuario.setText("");
+                    campoEmailUsuario.setText("");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um usuário para excluir.");
+            }
+        });
+
+        formulario.add(btnAdicionarUsuario);
+        formulario.add(btnEditarUsuario);
+        formulario.add(btnExcluirUsuario);
+        painel.add(formulario, BorderLayout.SOUTH);
+
+        atualizarTabelaUsuario(); // Método para atualizar a tabela com os usuários existentes
+        return painel;
+    }
+
     // Método para criar o painel de empréstimos
     private JPanel criarPainelEmprestimo() {
         JPanel painel = new JPanel(new BorderLayout());
@@ -222,6 +315,7 @@ public class Biblioteca extends JFrame {
         tabelaEmprestimo = new JTable(modeloTabelaEmprestimo);
         modeloTabelaEmprestimo.addColumn("ID");
         modeloTabelaEmprestimo.addColumn("Livro");
+        modeloTabelaEmprestimo.addColumn("Usuário"); // Nova coluna para usuário
         modeloTabelaEmprestimo.addColumn("Data de Empréstimo");
         modeloTabelaEmprestimo.addColumn("Data de Devolução");
 
@@ -233,6 +327,11 @@ public class Biblioteca extends JFrame {
         comboLivro = new JComboBox<>(); // Preencher com livros do banco
         preencherComboLivros();
         formulario.add(comboLivro);
+
+        formulario.add(new JLabel("Usuário:"));
+        comboUsuario = new JComboBox<>();
+        preencherComboUsuarios();
+        formulario.add(comboUsuario);
 
         formulario.add(new JLabel("Data de Empréstimo:"));
         campoDataEmprestimo = new JTextField();
@@ -249,17 +348,19 @@ public class Biblioteca extends JFrame {
         // Ação para Adicionar Empréstimo
         btnAdicionarEmprestimo.addActionListener(e -> {
             try {
-                ComboItem selectedItem = (ComboItem) comboLivro.getSelectedItem();
-                if (selectedItem != null) {
-                    int idLivro = selectedItem.getId();
+                ComboItem selectedLivro = (ComboItem) comboLivro.getSelectedItem();
+                ComboItem selectedUsuario = (ComboItem) comboUsuario.getSelectedItem();
+                if (selectedLivro != null && selectedUsuario != null) {
+                    int idLivro = selectedLivro.getId();
+                    int idUsuario = selectedUsuario.getId(); // Obter o ID do usuário selecionado
                     Date dataEmprestimo = Date.valueOf(campoDataEmprestimo.getText());
                     Date dataDevolucao = Date.valueOf(campoDataDevolucao.getText());
-                    gerenciaDados.addEmprestimo(idLivro, dataEmprestimo, dataDevolucao);
+                    gerenciaDados.addEmprestimo(idLivro, idUsuario, dataEmprestimo, dataDevolucao); // Passar ID do usuário
                     atualizarTabelaEmprestimo();
                     campoDataEmprestimo.setText("");
                     campoDataDevolucao.setText("");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Selecione um livro para o empréstimo.");
+                    JOptionPane.showMessageDialog(this, "Selecione um livro e um usuário para o empréstimo.");
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -267,23 +368,25 @@ public class Biblioteca extends JFrame {
             }
         });
 
-// Ação para Editar Empréstimo
+        // Ação para Editar Empréstimo
         btnEditarEmprestimo.addActionListener(e -> {
             int linhaSelecionada = tabelaEmprestimo.getSelectedRow();
             if (linhaSelecionada != -1) {
                 try {
                     int idEmprestimo = (int) modeloTabelaEmprestimo.getValueAt(linhaSelecionada, 0);
-                    ComboItem selectedItem = (ComboItem) comboLivro.getSelectedItem();
-                    if (selectedItem != null) {
-                        int idLivro = selectedItem.getId();
+                    ComboItem selectedLivro = (ComboItem) comboLivro.getSelectedItem();
+                    ComboItem selectedUsuario = (ComboItem) comboUsuario.getSelectedItem(); // Seleciona usuário
+                    if (selectedLivro != null && selectedUsuario != null) {
+                        int idLivro = selectedLivro.getId();
+                        int idUsuario = selectedUsuario.getId();
                         Date dataEmprestimo = Date.valueOf(campoDataEmprestimo.getText());
                         Date dataDevolucao = Date.valueOf(campoDataDevolucao.getText());
-                        gerenciaDados.updateEmprestimo(idEmprestimo, idLivro, dataEmprestimo, dataDevolucao);
+                        gerenciaDados.updateEmprestimo(idEmprestimo, idLivro, idUsuario, dataEmprestimo, dataDevolucao);
                         atualizarTabelaEmprestimo();
                         campoDataEmprestimo.setText("");
                         campoDataDevolucao.setText("");
                     } else {
-                        JOptionPane.showMessageDialog(this, "Selecione um livro para o empréstimo.");
+                        JOptionPane.showMessageDialog(this, "Selecione um livro e um usuário para o empréstimo.");
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -294,7 +397,7 @@ public class Biblioteca extends JFrame {
             }
         });
 
-// Ação para Excluir Empréstimo
+        // Ação para Excluir Empréstimo
         btnExcluirEmprestimo.addActionListener(e -> {
             int linhaSelecionada = tabelaEmprestimo.getSelectedRow();
             if (linhaSelecionada != -1) {
@@ -311,7 +414,6 @@ public class Biblioteca extends JFrame {
             }
         });
 
-
         formulario.add(btnAdicionarEmprestimo);
         formulario.add(btnEditarEmprestimo);
         formulario.add(btnExcluirEmprestimo);
@@ -319,6 +421,21 @@ public class Biblioteca extends JFrame {
         atualizarTabelaEmprestimo();
         return painel;
     }
+
+    private void preencherComboUsuarios() {
+        comboUsuario.removeAllItems();
+        try {
+            ResultSet rs = gerenciaDados.getUsuarios(); // Método para obter os usuários do banco
+            while (rs.next()) {
+                int id = rs.getInt("id_usuario");
+                String nome = rs.getString("nome_usuario"); // Substitua pelo nome correto da coluna
+                comboUsuario.addItem(new ComboItem(id, nome));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
 
     // Método para preencher categorias no JComboBox
     private void preencherComboCategorias() {
@@ -404,6 +521,32 @@ public class Biblioteca extends JFrame {
             ex.printStackTrace(); // Você pode manter isso para depuração
         }
     }
+    private void atualizarTabelaUsuario() {
+        modeloTabelaUsuario.setRowCount(0);
+        try {
+            ResultSet rs = gerenciaDados.getUsuarios();
+            boolean temUsuarios = false;
+
+            while (rs.next()) {
+                int id = rs.getInt("id_usuario");
+                String nome = rs.getString("nome_usuario");
+                String email = rs.getString("email_usuario");
+                modeloTabelaUsuario.addRow(new Object[]{id, nome, email});
+                temUsuarios = true;
+            }
+
+
+            if (!temUsuarios) {
+                modeloTabelaUsuario.addRow(new Object[]{"", "Nenhum usuário registrado", ""});
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela de usuários: " + ex.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
 
     // Atualiza a tabela de empréstimos
     private void atualizarTabelaEmprestimo() {
