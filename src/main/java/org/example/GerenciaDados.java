@@ -72,12 +72,14 @@ public class GerenciaDados {
             stmt.setString(1, titulo);
             stmt.setInt(2, idCategoria);
             stmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     // Lista todos os livros
     public ResultSet getLivros() throws SQLException {
-        String sql = "SELECT l.id_livro, l.titulo_livro, c.nome_categoria FROM livro l JOIN categoria c ON l.id_categoria = c.nome_categoria";
+        String sql = "SELECT l.id_livro, l.titulo_livro, c.nome_categoria FROM livro l JOIN categoria c ON l.id_categoria = c.id_categoria";
         Connection conn = getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);
         return stmt.executeQuery();
